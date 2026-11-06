@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pokédex</title>
+
+  <!-- Fontes do Google: Rubik (textos da página) e VT323 (textos das telas) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&family=VT323&display=swap" rel="stylesheet">
+
+  <!-- Estilos da Pokédex -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Scripts: interface.js (abrir/fechar, zoom e ajuda) e pokedex.js (seu código com a PokeAPI) -->
+  <script src="js/interface.js" defer></script>
+  <script src="js/pokedex.js" defer></script>
+</head>
+<body>
+  <main>
+    <div class="stage">
+      <div class="pokedex" id="pokedex">
+
+        <!-- =================================================
+             PARTE FIXA (lado esquerdo)
+             ================================================= -->
+        <div class="pokedex-body">
+
+          <!-- Desenho do corpo vermelho, do rebaixo e da dobradiça -->
+          <svg class="svg-shape" viewBox="0 0 100 160" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <path id="recess-shape" d="M0,38 Q0,35 3,35 L36,35 C50,35 52,12 66,12 L92,12 L92,160 L7,160 Q0,160 0,153 Z"/>
+              <clipPath id="recess-clip"><use href="#recess-shape"/></clipPath>
+            </defs>
+
+            <!-- Corpo -->
+            <path d="M7,0 L93,0 Q100,0 100,7 L100,160 L7,160 Q0,160 0,153 L0,7 Q0,0 7,0 Z" fill="#dd092f" stroke="#7d0519" stroke-width="1.2"/>
+
+            <!-- Rebaixo (onde a tampa se encaixa) com linha interna -->
+            <use href="#recess-shape" fill="#dd092f"/>
+            <g clip-path="url(#recess-clip)" fill="none" stroke-linejoin="miter">
+              <use href="#recess-shape" stroke="#7d0519" stroke-width="6.8"/>
+              <use href="#recess-shape" stroke="#dd092f" stroke-width="5.2"/>
+            </g>
+            <use href="#recess-shape" fill="none" stroke="#7d0519" stroke-width="1.2"/>
+
+            <!-- Dobradiça -->
+            <g stroke="#7d0519" stroke-width="1.2" fill="#dd092f">
+              <rect x="92" y="24" width="8" height="124"/>
+              <rect x="92" y="12" width="8" height="12"/>
+              <rect x="92" y="148" width="8" height="12"/>
+            </g>
+          </svg>
+
+          <!-- Lente azul (fecha a Pokédex quando aberta) -->
+          <div class="absolute lens" id="lens" role="button" tabindex="-1" aria-label="Fechar a Pokédex">
+            <div class="lens-glass"></div>
+          </div>
+
+          <!-- LEDs -->
+          <span class="absolute lamp led led--red"></span>
+          <span class="absolute lamp led led--yellow"></span>
+          <span class="absolute lamp led led--green"></span>
+
+          <div class="absolute body-content">
+
+            <!-- Moldura da tela principal -->
+            <div class="absolute screen-frame">
+              <span class="absolute lamp frame-dot frame-dot--left"></span>
+              <span class="absolute lamp frame-dot frame-dot--right"></span>
+
+              <!-- TELA PRINCIPAL: mostre aqui a imagem (sprite) do Pokémon -->
+              <div class="absolute main-screen" id="main-screen">Nenhum Pokémon carregado</div>
+
+              <span class="absolute lamp power-led"></span>
+
+              <!-- Alto-falante -->
+              <svg class="absolute speaker" viewBox="0 0 100 76" preserveAspectRatio="none" aria-hidden="true">
+                <rect x="0" y="0"  width="100" height="10" rx="5" fill="#555"/>
+                <rect x="0" y="22" width="100" height="10" rx="5" fill="#555"/>
+                <rect x="0" y="44" width="100" height="10" rx="5" fill="#555"/>
+                <rect x="0" y="66" width="100" height="10" rx="5" fill="#555"/>
+              </svg>
+            </div>
+
+            <!-- Botões abaixo da tela -->
+            <button class="absolute btn round-btn" id="btn-round" aria-label="Botão redondo"></button>
+            <button class="absolute btn pill-btn pill-btn--red" id="btn-red" aria-label="Botão vermelho"></button>
+            <button class="absolute btn pill-btn pill-btn--blue" id="btn-blue" aria-label="Botão azul"></button>
+
+            <!-- VISOR VERDE: mostre aqui o número do Pokémon -->
+            <div class="absolute number-display" id="number-display">#000</div>
+
+            <!-- Direcional (D-pad) -->
+            <div class="absolute dpad">
+              <button class="dpad-btn dpad-btn--up" id="btn-up" aria-label="Cima"></button>
+              <button class="dpad-btn dpad-btn--down" id="btn-down" aria-label="Baixo"></button>
+              <button class="dpad-btn dpad-btn--left" id="btn-left" aria-label="Anterior"></button>
+              <button class="dpad-btn dpad-btn--right" id="btn-right" aria-label="Próximo"></button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- =================================================
+             TAMPA (gira na dobradiça)
+             ================================================= -->
+        <div class="pokedex-cover">
+
+          <!-- Lado de fora da tampa (visível com a Pokédex fechada) -->
+          <div class="cover-face cover-face--front" id="cover-front" role="button" tabindex="0" aria-label="Abrir a Pokédex" aria-expanded="false">
+            <svg class="svg-shape" viewBox="0 0 92 148" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M0,26 Q0,23 3,23 L36,23 C50,23 52,0 66,0 L92,0 L92,148 L7,148 Q0,148 0,141 Z"
+                    fill="#dd092f" stroke="#7d0519" stroke-width="1.2"/>
+            </svg>
+
+            <svg class="absolute latch" viewBox="0 0 6 8" preserveAspectRatio="none" aria-hidden="true">
+              <polygon points="0,0 6,4 0,8" fill="#ffc200" stroke="#7d0519" stroke-width="1" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            </svg>
+
+            <span class="absolute slot"></span>
+          </div>
+
+          <!-- Lado de dentro da tampa (aparece à direita com a Pokédex aberta) -->
+          <div class="cover-face cover-face--back">
+            <svg class="svg-shape" viewBox="0 0 92 148" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <path id="panel-shape" d="M0,0 L26,0 C40,0 42,23 56,23 L89,23 Q92,23 92,26 L92,141 Q92,148 85,148 L0,148 Z"/>
+                <clipPath id="panel-clip"><use href="#panel-shape"/></clipPath>
+              </defs>
+              <use href="#panel-shape" fill="#dd092f"/>
+              <g clip-path="url(#panel-clip)" fill="none" stroke-linejoin="miter">
+                <use href="#panel-shape" stroke="#7d0519" stroke-width="6.8"/>
+                <use href="#panel-shape" stroke="#dd092f" stroke-width="5.2"/>
+              </g>
+              <use href="#panel-shape" fill="none" stroke="#7d0519" stroke-width="1.2"/>
+            </svg>
+
+            <div class="absolute cover-content">
+
+              <!-- TELA DE INFORMAÇÕES: mostre aqui nome, tipos, descrição... -->
+              <div class="absolute info-screen" id="info-screen">Aguardando dados…</div>
+
+              <!-- Teclado azul (10 teclas) -->
+              <div class="absolute keypad" id="keypad">
+                <button class="btn keypad-key" id="key-1" aria-label="Tecla 1">1</button>
+                <button class="btn keypad-key" id="key-2" aria-label="Tecla 2">2</button>
+                <button class="btn keypad-key" id="key-3" aria-label="Tecla 3">3</button>
+                <button class="btn keypad-key" id="key-4" aria-label="Tecla 4">4</button>
+                <button class="btn keypad-key" id="key-5" aria-label="Tecla 5">5</button>
+                <button class="btn keypad-key" id="key-6" aria-label="Tecla 6">6</button>
+                <button class="btn keypad-key" id="key-7" aria-label="Tecla 7">7</button>
+                <button class="btn keypad-key" id="key-8" aria-label="Tecla 8">8</button>
+                <button class="btn keypad-key" id="key-9" aria-label="Tecla 9">9</button>
+                <button class="btn keypad-key" id="key-10" aria-label="Tecla 10">0</button>
+              </div>
+
+              <!-- Teclas brancas, botões escuros e LED amarelo (clicável) -->
+              <button class="absolute btn white-key white-key--left" id="btn-white-left" aria-label="Tecla branca A">SEARCH</button>
+              <button class="absolute btn white-key white-key--right" id="btn-white-right" aria-label="Tecla branca B">DELETE</button>
+              <button class="absolute btn dark-pill-btn dark-pill-btn--left" id="btn-dark-left" aria-label="Botão escuro A"></button>
+              <button class="absolute btn dark-pill-btn dark-pill-btn--right" id="btn-dark-right" aria-label="Botão escuro B"></button>
+              <button class="absolute lamp yellow-led" id="led-yellow" aria-label="LED amarelo (shiny)" aria-pressed="false"></button>
+
+              <!-- TELINHAS INFERIORES: use para informações curtas -->
+              <div class="absolute small-display small-display--left" id="small-display-left">---</div>
+              <div class="absolute small-display small-display--right" id="small-display-right">---</div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Dica e botão de ajuda -->
+    <div class="help-bar">
+      <p class="hint" id="hint">Clique na Pokédex acima para abri-la</p>
+      <button class="help-btn" id="help-btn" aria-label="Como usar">?</button>
+    </div>
+  </main>
+
+  <!-- Janela de ajuda -->
+  <dialog class="help-dialog" id="help-dialog">
+    <h2>Como usar</h2>
+    <ol>
+      <li>Clique na Pokédex para abri-la.</li>
+      <li>Clique na lente azul para fechá-la de novo.</li>
+      <li>Role a rodinha do mouse sobre a Pokédex para aumentá-la ou diminuí-la.</li>
+      <!-- Adicione aqui novos passos conforme criar as funcionalidades -->
+    </ol>
+    <button id="help-close">Entendi</button>
+  </dialog>
+</body>
+</html>

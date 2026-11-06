@@ -1,0 +1,766 @@
+/* =========================================================
+   POKÉDEX - FOLHA DE ESTILOS
+   Este arquivo cuida apenas da aparência da Pokédex.
+   Não é preciso alterá-lo para fazer as requisições à PokeAPI.
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   1. VARIÁVEIS (cores e medidas)
+   --------------------------------------------------------- */
+:root {
+  /* Unidade base: todas as medidas da Pokédex são múltiplos dela.
+     1 unidade = largura da Pokédex fechada.
+     --zoom é alterado pelo JavaScript (rodinha do mouse). */
+  --zoom: 1;
+  --unit: calc(min(42vw, 30vh, 280px) * var(--zoom));
+
+  /* Espessuras usadas nos detalhes e na profundidade dos botões */
+  --detail-line: calc(var(--unit) * .008);
+  --depth: calc(var(--unit) * .008);
+
+  /* Cores da Pokédex */
+  --red: #dd092f;
+  --red-dark: #b5072a;
+  --red-line: #7d0519;
+  --yellow: #ffc200;
+  --lens-light: #a0dbff;
+  --lens: #27aafe;
+  --lens-dark: #1969a0;
+  --led-red: #cf1034;
+  --led-yellow: #e8ce41;
+  --led-green: #78b27f;
+  --frame: #dfdfdf;
+  --screen: #242424;
+  --screen-text: #cfe9d4;
+  --dot-red: #e61526;
+  --pill-red: #e90e37;
+  --pill-blue: #0e6689;
+  --dark-teal: #012e2a;
+  --green-display: #51ad62;
+  --key-blue: #2aabfe;
+  --pill-dark: #072623;
+  --btn-yellow: #f8e12d;
+
+  /* Cores da página (tema claro) */
+  --page: #e8ecef;
+  --ink: #1d2226;
+  --ink-soft: #5a636b;
+
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Tema escuro: segue a preferência do sistema operacional */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #16191c;
+    --ink: #e6e9ec;
+    --ink-soft: #9aa3ab;
+  }
+}
+
+:root[data-theme="dark"] {
+  --page: #16191c;
+  --ink: #e6e9ec;
+  --ink-soft: #9aa3ab;
+}
+
+
+/* ---------------------------------------------------------
+   2. BASE DA PÁGINA
+   --------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+  margin: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  overflow-x: hidden;
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Rubik", system-ui, sans-serif;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--unit) * .25);
+  padding: 24px 16px;
+}
+
+/* Remove o visual padrão dos botões do navegador */
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
+  font: inherit;
+}
+
+/* Contorno de foco ao navegar pelo teclado */
+button:focus-visible,
+.cover-face--front:focus-visible,
+.lens:focus-visible {
+  outline: 3px solid var(--key-blue);
+  outline-offset: 2px;
+}
+
+
+/* ---------------------------------------------------------
+   3. CLASSES UTILITÁRIAS
+   --------------------------------------------------------- */
+
+/* Elemento posicionado livremente dentro do seu "pai" */
+.absolute {
+  position: absolute;
+}
+
+/* Desenho SVG que ocupa todo o espaço do elemento pai */
+.svg-shape {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+
+/* ---------------------------------------------------------
+   4. ESTILOS COMPARTILHADOS
+   --------------------------------------------------------- */
+
+/* Botão padrão: defina --color em cada botão para mudar a cor.
+   As demais tonalidades (borda, brilho, sombra) são calculadas a partir dela. */
+.btn,
+.dpad {
+  --btn-line: color-mix(in srgb, var(--color) 50%, #000);
+  --btn-edge: color-mix(in srgb, var(--color) 62%, #000);
+  --btn-light: color-mix(in srgb, var(--color) 65%, #fff);
+  --btn-pressed: color-mix(in srgb, var(--color) 85%, #000);
+}
+
+.btn {
+  background: var(--color);
+  border: 1px solid var(--btn-line);
+  box-shadow:
+    inset 0 1px 0 var(--btn-light),
+    inset 0 calc(var(--depth) * -1) 0 var(--btn-edge),
+    0 1px 2px rgb(0 0 0 / .35);
+  cursor: pointer;
+}
+
+/* Botão pressionado */
+.btn:active {
+  background: var(--btn-pressed);
+  box-shadow:
+    inset 0 var(--depth) 0 var(--btn-edge),
+    0 0 1px rgb(0 0 0 / .3);
+}
+
+/* Luz redonda (LEDs): defina --color com a cor da luz */
+.lamp {
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color) 35%, #000);
+  background: radial-gradient(circle at 34% 28%,
+    var(--color) 0 28%,
+    color-mix(in srgb, var(--color) 78%, #000) 48%,
+    color-mix(in srgb, var(--color) 58%, #000) 68%);
+}
+
+/* Reflexo maior da luz */
+.lamp::before {
+  content: "";
+  position: absolute;
+  left: 16%;
+  top: 12%;
+  width: 42%;
+  height: 42%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color) 60%, #fff);
+}
+
+/* Ponto de brilho da luz */
+.lamp::after {
+  content: "";
+  position: absolute;
+  left: 26%;
+  top: 19%;
+  width: 15%;
+  height: 15%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color) 25%, #fff);
+}
+
+/* Fonte e cores das telas pretas */
+.main-screen,
+.info-screen,
+.small-display {
+  background: var(--screen);
+  color: var(--screen-text);
+  font-family: "VT323", ui-monospace, monospace;
+}
+
+
+/* ---------------------------------------------------------
+   5. POKÉDEX (estrutura geral e animação de abrir/fechar)
+   --------------------------------------------------------- */
+.stage {
+  display: flex;
+  justify-content: center;
+  width: calc(var(--unit) * 2);
+  perspective: calc(var(--unit) * 6);
+}
+
+.pokedex {
+  position: relative;
+  width: var(--unit);
+  height: calc(var(--unit) * 1.6);
+  transform-style: preserve-3d;
+  transition: transform .9s cubic-bezier(.6, 0, .2, 1);
+}
+
+/* Quando aberta, a Pokédex desliza para a esquerda para caber na tela */
+.pokedex.is-open {
+  transform: translateX(calc(var(--unit) * -.46));
+}
+
+/* Parte fixa (lado esquerdo) */
+.pokedex-body {
+  position: absolute;
+  inset: 0;
+}
+
+
+/* ---------------------------------------------------------
+   6. PARTE FIXA: LENTE AZUL E LEDS
+   --------------------------------------------------------- */
+.lens {
+  left: calc(var(--unit) * .06);
+  top: calc(var(--unit) * .05);
+  width: calc(var(--unit) * .25);
+  height: calc(var(--unit) * .25);
+  padding: calc(var(--unit) * .02);
+  border-radius: 50%;
+  border: 2px solid var(--red-line);
+  background: #f4f4f4;
+  cursor: pointer;
+}
+
+.lens-glass {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid #0d3f63;
+  background: radial-gradient(circle at 34% 28%,
+    var(--lens) 0 28%,
+    color-mix(in srgb, var(--lens) 50%, var(--lens-dark)) 48%,
+    var(--lens-dark) 68%);
+}
+
+/* Reflexo maior da lente */
+.lens-glass::before {
+  content: "";
+  position: absolute;
+  left: 16%;
+  top: 12%;
+  width: 42%;
+  height: 42%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lens) 55%, var(--lens-light));
+  filter: blur(.5px);
+}
+
+/* Ponto de brilho da lente */
+.lens-glass::after {
+  content: "";
+  position: absolute;
+  left: 26%;
+  top: 19%;
+  width: 15%;
+  height: 15%;
+  border-radius: 50%;
+  background: var(--lens-light);
+  filter: blur(.5px);
+}
+
+/* LEDs ao lado da lente */
+.led {
+  top: calc(var(--unit) * .07);
+  width: calc(var(--unit) * .05);
+  height: calc(var(--unit) * .05);
+}
+
+.led--red    { left: calc(var(--unit) * .36); --color: var(--led-red); }
+.led--yellow { left: calc(var(--unit) * .44); --color: var(--led-yellow); }
+.led--green  { left: calc(var(--unit) * .52); --color: var(--led-green); }
+
+
+/* ---------------------------------------------------------
+   7. PARTE FIXA: TELA PRINCIPAL E MOLDURA
+   --------------------------------------------------------- */
+
+/* Área que agrupa tudo o que fica no rebaixo da parte fixa */
+.body-content {
+  left: calc(var(--unit) * .085);
+  top: calc(var(--unit) * .4725);
+  width: calc(var(--unit) * .75);
+  height: calc(var(--unit) * 1.005);
+}
+
+/* Moldura branca da tela, com o canto inferior esquerdo cortado.
+   O fundo vermelho escuro vira o contorno; o ::before desenha a parte branca. */
+.screen-frame {
+  left: 0;
+  top: 0;
+  width: calc(var(--unit) * .75);
+  height: calc(var(--unit) * .65);
+  background: var(--red-line);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 16% 100%, 0 88%);
+}
+
+.screen-frame::before {
+  --line: var(--detail-line);
+  --bevel: calc(var(--unit) * .012);
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--frame);
+  /* Efeito de relevo: claro em cima/esquerda, escuro embaixo/direita */
+  box-shadow:
+    inset var(--bevel) var(--bevel) 0 #f7f7f7,
+    inset calc(var(--bevel) * -1) calc(var(--bevel) * -1) 0 #a9a9a9;
+  clip-path: polygon(
+    var(--line) var(--line),
+    calc(100% - var(--line)) var(--line),
+    calc(100% - var(--line)) calc(100% - var(--line)),
+    calc(var(--unit) * .12 + var(--line) * .297) calc(100% - var(--line)),
+    var(--line) calc(var(--unit) * .572 - var(--line) * .543));
+}
+
+/* Duas luzinhas vermelhas no topo da moldura */
+.frame-dot {
+  top: calc(var(--unit) * .035);
+  width: calc(var(--unit) * .03);
+  height: calc(var(--unit) * .03);
+  --color: var(--dot-red);
+}
+
+.frame-dot--left  { left: calc(var(--unit) * .32); }
+.frame-dot--right { left: calc(var(--unit) * .40); }
+
+/* Tela principal (onde aparece a imagem do Pokémon) */
+.main-screen {
+  left: calc(var(--unit) * .1);
+  top: calc(var(--unit) * .1);
+  width: calc(var(--unit) * .55);
+  height: calc(var(--unit) * .4);
+  display: grid;
+  place-items: center;
+  padding: calc(var(--unit) * .02);
+  overflow: hidden;
+  border-radius: calc(var(--unit) * .015);
+  font-size: calc(var(--unit) * .07);
+  text-align: center;
+}
+
+/* Luz vermelha abaixo da tela */
+.power-led {
+  left: calc(var(--unit) * .1);
+  bottom: calc((var(--unit) * .15 + var(--detail-line)) / 2 - var(--unit) * .045 / 2);
+  width: calc(var(--unit) * .045);
+  height: calc(var(--unit) * .045);
+  --color: var(--dot-red);
+}
+
+/* Alto-falante (4 linhas) abaixo da tela */
+.speaker {
+  right: calc(var(--unit) * .1);
+  bottom: calc((var(--unit) * .15 + var(--detail-line)) / 2 - var(--unit) * .076 / 2);
+  display: block;
+  width: calc(var(--unit) * .1);
+  height: calc(var(--unit) * .076);
+}
+
+
+/* ---------------------------------------------------------
+   8. PARTE FIXA: CONTROLES ABAIXO DA TELA
+   --------------------------------------------------------- */
+
+/* Botão redondo escuro */
+.round-btn {
+  left: 0;
+  top: calc(var(--unit) * .74375);
+  width: calc(var(--unit) * .1);
+  height: calc(var(--unit) * .1);
+  border-radius: 50%;
+  --color: var(--dark-teal);
+}
+
+/* Botões compridos (vermelho e azul) */
+.pill-btn {
+  top: calc(var(--unit) * .72125);
+  width: calc(var(--unit) * .1155);
+  height: calc(var(--unit) * .0225);
+  border-radius: 99px;
+}
+
+.pill-btn--red  { left: calc(var(--unit) * .154375); --color: var(--pill-red); }
+.pill-btn--blue { left: calc(var(--unit) * .320125); --color: var(--pill-blue); }
+
+/* Visor verde (número do Pokémon) */
+.number-display {
+  left: calc(var(--unit) * .145);
+  top: calc(var(--unit) * .815);
+  width: calc(var(--unit) * .3);
+  height: calc(var(--unit) * .15);
+  display: grid;
+  place-items: center;
+  background: var(--green-display);
+  border: 1px solid #2c6b38;
+  border-radius: calc(var(--unit) * .02);
+  color: #10351a;
+  font-family: "VT323", ui-monospace, monospace;
+  font-size: calc(var(--unit) * .065);
+}
+
+
+/* ---------------------------------------------------------
+   9. PARTE FIXA: DIRECIONAL (D-PAD)
+   --------------------------------------------------------- */
+.dpad {
+  --color: var(--dark-teal);
+  right: 0;
+  top: calc(var(--unit) * .745);
+  width: calc(var(--unit) * .26);
+  height: calc(var(--unit) * .26);
+  /* Contorno e sombra em volta da cruz inteira */
+  filter:
+    drop-shadow(1px 0 0 var(--btn-line))
+    drop-shadow(-1px 0 0 var(--btn-line))
+    drop-shadow(0 1px 0 var(--btn-line))
+    drop-shadow(0 -1px 0 var(--btn-line))
+    drop-shadow(0 1px 2px rgb(0 0 0 / .35));
+}
+
+/* Quadrado central da cruz */
+.dpad::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--unit) * .0925);
+  top: calc(var(--unit) * .0925);
+  width: calc(var(--unit) * .075);
+  height: calc(var(--unit) * .075);
+  background: var(--color);
+}
+
+/* Círculo rebaixado no centro */
+.dpad::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--unit) * .11);
+  top: calc(var(--unit) * .11);
+  width: calc(var(--unit) * .04);
+  height: calc(var(--unit) * .04);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color) 85%, #000);
+  box-shadow:
+    inset 0 1.5px 1.5px rgb(0 0 0 / .6),
+    inset 0 -1px 0 rgb(255 255 255 / .12);
+  pointer-events: none;
+}
+
+/* Cada braço da cruz */
+.dpad-btn {
+  position: absolute;
+  width: calc(var(--unit) * .0925);
+  height: calc(var(--unit) * .075);
+  background: var(--color);
+  border: 0;
+  cursor: pointer;
+}
+
+.dpad-btn--up,
+.dpad-btn--down {
+  left: calc(var(--unit) * .0925);
+  width: calc(var(--unit) * .075);
+  height: calc(var(--unit) * .0925);
+}
+
+.dpad-btn--left,
+.dpad-btn--right {
+  top: calc(var(--unit) * .0925);
+}
+
+.dpad-btn--up {
+  top: 0;
+  border-radius: 3px 3px 0 0;
+  box-shadow: inset 0 1px 0 var(--btn-light);
+}
+
+.dpad-btn--down {
+  bottom: 0;
+  border-radius: 0 0 3px 3px;
+  box-shadow: inset 0 calc(var(--depth) * -1) 0 var(--btn-edge);
+}
+
+.dpad-btn--left {
+  left: 0;
+  border-radius: 3px 0 0 3px;
+  box-shadow: inset 0 1px 0 var(--btn-light), inset 0 calc(var(--depth) * -1) 0 var(--btn-edge);
+}
+
+.dpad-btn--right {
+  right: 0;
+  border-radius: 0 3px 3px 0;
+  box-shadow: inset 0 1px 0 var(--btn-light), inset 0 calc(var(--depth) * -1) 0 var(--btn-edge);
+}
+
+.dpad-btn:active {
+  background: var(--btn-pressed);
+  box-shadow: none;
+}
+
+
+/* ---------------------------------------------------------
+   10. TAMPA (gira na dobradiça para abrir)
+   --------------------------------------------------------- */
+.pokedex-cover {
+  position: absolute;
+  left: 0;
+  top: calc(var(--unit) * .12);
+  width: calc(var(--unit) * .92);
+  height: calc(var(--unit) * 1.48);
+  transform-origin: calc(var(--unit) * .96) 50%;   /* eixo de giro = dobradiça */
+  transform-style: preserve-3d;
+  transform: translateZ(1px);
+  transition: transform .9s cubic-bezier(.6, 0, .2, 1);
+}
+
+.pokedex.is-open .pokedex-cover {
+  transform: rotateY(180deg);
+}
+
+/* Cada lado da tampa (frente e verso) */
+.cover-face {
+  position: absolute;
+  inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Lado de fora: o que se vê com a Pokédex fechada */
+.cover-face--front {
+  cursor: pointer;
+}
+
+/* Lado de dentro: aparece à direita quando aberta */
+.cover-face--back {
+  transform: rotateY(180deg);
+}
+
+/* Triângulo amarelo na borda da tampa */
+.latch {
+  left: 2px;
+  top: calc(var(--unit) * .7);
+  display: block;
+  width: calc(var(--unit) * .06);
+  height: calc(var(--unit) * .08);
+  overflow: visible;
+}
+
+/* Fenda na parte de baixo da tampa */
+.slot {
+  --line: var(--detail-line);
+  left: calc(var(--unit) * .26 - var(--line) + 1px);
+  bottom: calc(var(--unit) * .09 - var(--line) + 1px);
+  width: calc(var(--unit) * .4 + 2 * var(--line) - 2px);
+  height: calc(var(--unit) * .03 + 2 * var(--line) - 2px);
+  border-radius: 99px;
+  background: var(--red);
+  border: var(--line) solid var(--red-line);
+}
+
+
+/* ---------------------------------------------------------
+   11. LADO DE DENTRO DA TAMPA: TELA DE INFORMAÇÕES E TECLADO
+   --------------------------------------------------------- */
+
+/* Área que agrupa os elementos do lado de dentro da tampa.
+   --gap é o espaço vertical entre as linhas de elementos. */
+.cover-content {
+  --gap: calc((1.005 - .74) / 3);
+  left: calc(var(--unit) * .085);
+  top: calc(var(--unit) * .3525);
+  width: calc(var(--unit) * .75);
+  height: calc(var(--unit) * 1.005);
+}
+
+/* Tela de informações (nome, tipos, descrição...) */
+.info-screen {
+  left: 0;
+  top: 0;
+  width: calc(var(--unit) * .75);
+  height: calc(var(--unit) * .24);
+  padding: calc(var(--unit) * .02) calc(var(--unit) * .03);
+  overflow: hidden;
+  border-radius: calc(var(--unit) * .015);
+  font-size: calc(var(--unit) * .06);
+}
+
+/* Teclado azul: 5 colunas x 2 linhas */
+.keypad {
+  left: 0;
+  top: calc(var(--unit) * (.24 + var(--gap)));
+  width: calc(var(--unit) * .75);
+  height: calc(var(--unit) * .24);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 1px;
+}
+
+.keypad-key {
+  border-radius: calc(var(--unit) * .004);
+  --color: var(--key-blue);
+}
+
+/* Teclas brancas */
+.white-key {
+  top: calc(var(--unit) * (.48 + 2 * var(--gap)));
+  width: calc(var(--unit) * .15 - .5px);
+  height: calc(var(--unit) * .12);
+  border-radius: calc(var(--unit) * .004);
+  --color: var(--frame);
+}
+
+.white-key--left  { left: 0; }
+.white-key--right { left: calc(var(--unit) * .15 + .5px); }
+
+/* Botões compridos escuros */
+.dark-pill-btn {
+  top: calc(var(--unit) * (.48 + 2 * var(--gap)));
+  width: calc(var(--unit) * .14);
+  height: calc(var(--unit) * .035);
+  border-radius: 99px;
+  --color: var(--pill-dark);
+}
+
+.dark-pill-btn--left  { left: calc(var(--unit) * .43); }
+.dark-pill-btn--right { right: 0; }
+
+/* LED redondo amarelo (também é botão: liga/desliga o shiny) */
+.yellow-led {
+  left: calc(var(--unit) * .64);
+  top: calc(var(--unit) * (.56 + 2 * var(--gap)));
+  width: calc(var(--unit) * .08);
+  height: calc(var(--unit) * .08);
+  cursor: pointer;
+  --color: var(--btn-yellow);
+}
+
+/* Duas telinhas pretas na parte de baixo */
+.small-display {
+  top: calc(var(--unit) * (.64 + 3 * var(--gap)));
+  width: calc(var(--unit) * .35);
+  height: calc(var(--unit) * .1);
+  display: grid;
+  place-items: center;
+  border-radius: calc(var(--unit) * .02);
+  font-size: calc(var(--unit) * .06);
+}
+
+.small-display--left  { left: 0; }
+.small-display--right { right: 0; }
+
+
+/* ---------------------------------------------------------
+   12. DICA E JANELA DE AJUDA
+   --------------------------------------------------------- */
+.help-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(100%, calc(var(--unit) * 2));
+}
+
+.hint {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font-size: clamp(14px, 2.2vw, 17px);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.help-btn {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  font: 600 24px/1 "Rubik", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.help-dialog {
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 20px 22px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--page);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.help-dialog::backdrop {
+  background: rgb(0 0 0 / .45);
+}
+
+.help-dialog h2 {
+  margin-bottom: 8px;
+  font-size: 20px;
+}
+
+.help-dialog ol {
+  margin-bottom: 16px;
+  padding-left: 1.2em;
+  color: var(--ink-soft);
+}
+
+.help-dialog button {
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--red);
+  color: #fff;
+  font: 600 15px "Rubik", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+
+/* ---------------------------------------------------------
+   13. ACESSIBILIDADE: desliga animações se o usuário preferir
+   --------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .pokedex,
+  .pokedex-cover {
+    transition: none;
+  }
+}
