@@ -617,7 +617,9 @@ button:focus-visible,
   padding: calc(var(--unit) * .02) calc(var(--unit) * .03);
   overflow: hidden;
   border-radius: calc(var(--unit) * .015);
-  font-size: calc(var(--unit) * .06);
+  font-size: calc(var(--unit) * .037);
+  line-height: 1.05;
+  white-space: pre-line;
 }
 
 /* Teclado azul: 5 colunas x 2 linhas */
