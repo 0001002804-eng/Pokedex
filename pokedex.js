@@ -1,12 +1,4 @@
-/* =========================================================
-   POKÉDEX - CONSULTA E EXIBIÇÃO DOS POKÉMONS
-   Este arquivo controla o teclado numérico, a pesquisa na
-   PokeAPI, os visores e os botões direcionais (D-pad).
-   JavaScript Vanilla: sem bibliotecas ou frameworks.
-   ========================================================= */
 
-/* A Pokédex Nacional da PokeAPI possui Pokémon numerados de
-   1 até 1025. Se a API ampliar a lista, este é o valor a alterar. */
 const MAX_POKEMON_ID = 1025;
 
 let estadoPokedex = {
@@ -16,9 +8,7 @@ let estadoPokedex = {
 let numPokemon = '';
 let pokemonAtual = null;
 
-/* ---------------------------------------------------------
-   1. ELEMENTOS HTML UTILIZADOS
-   --------------------------------------------------------- */
+/* ELEMENTOS HTML UTILIZADOS */
 
 // Teclado numérico
 const key1 = document.querySelector('#key-1');
@@ -41,7 +31,7 @@ const infoScreen = document.querySelector('#info-screen');
 const mainScreen = document.querySelector('#main-screen');
 const numberDisplay = document.querySelector('#number-display');
 
-// Telinhas inferiores: ficam inicialmente como estão no HTML (---).
+// Telinhas inferiores
 const smallDisplayLeft = document.querySelector('#small-display-left');
 const smallDisplayRight = document.querySelector('#small-display-right');
 
@@ -51,11 +41,7 @@ const btnDown = document.querySelector('#btn-down');
 const btnLeft = document.querySelector('#btn-left');
 const btnRight = document.querySelector('#btn-right');
 
-/* ---------------------------------------------------------
-   2. EVENTOS DOS BOTÕES
-   --------------------------------------------------------- */
 
-// Cada tecla envia seu algarismo para a função leituraTeclado.
 key1.addEventListener('click', () => leituraTeclado('1'));
 key2.addEventListener('click', () => leituraTeclado('2'));
 key3.addEventListener('click', () => leituraTeclado('3'));
@@ -70,17 +56,12 @@ key10.addEventListener('click', () => leituraTeclado('0'));
 btnWhiteLeft.addEventListener('click', buscarPokemon);
 btnWhiteRight.addEventListener('click', apagar);
 
-// Setas laterais: alteram o ID em 1.
 btnLeft.addEventListener('click', () => trocarPokemon(-1));
 btnRight.addEventListener('click', () => trocarPokemon(1));
 
-// Setas verticais: alteram o ID em 10.
 btnUp.addEventListener('click', () => trocarPokemon(10));
 btnDown.addEventListener('click', () => trocarPokemon(-10));
 
-/* ---------------------------------------------------------
-   3. TELINHAS INFERIORES
-   --------------------------------------------------------- */
 
 // Exibe qualquer texto na telinha inferior esquerda.
 function exibirDisplayInferiorEsquerdo(informacao) {
@@ -92,13 +73,11 @@ function exibirDisplayInferiorDireito(informacao) {
     smallDisplayRight.textContent = informacao;
 }
 
-// Atualiza as duas telinhas de uma vez, se isso for conveniente.
 function atualizarDisplaysInferiores(informacaoEsquerda, informacaoDireita) {
     exibirDisplayInferiorEsquerdo(informacaoEsquerda);
     exibirDisplayInferiorDireito(informacaoDireita);
 }
 
-// Restaura o marcador original de cada telinha.
 function limparDisplayInferiorEsquerdo() {
     smallDisplayLeft.textContent = '---';
 }
@@ -112,12 +91,9 @@ function limparDisplaysInferiores() {
     limparDisplayInferiorDireito();
 }
 
-/* ---------------------------------------------------------
-   4. TECLADO NUMÉRICO
-   --------------------------------------------------------- */
+/* TECLADO NUMÉRICO */
 
 function leituraTeclado(tecla) {
-    // Ao começar uma nova digitação, limpa o campo de pesquisa.
     if (!estadoPokedex.digitando) {
         numPokemon = '';
         infoScreen.textContent = '';
@@ -144,9 +120,7 @@ function apagar() {
     }
 }
 
-/* ---------------------------------------------------------
-   5. PESQUISAR UM POKÉMON NA POKEAPI
-   --------------------------------------------------------- */
+/*  PESQUISAR UM POKÉMON NA POKEAPI */
 
 async function buscarPokemon() {
     if (!estadoPokedex.digitando || numPokemon.length === 0) {
@@ -155,7 +129,6 @@ async function buscarPokemon() {
 
     const id = Number(numPokemon);
 
-    // Encerra a digitação antes de iniciar a consulta.
     estadoPokedex.digitando = false;
     numPokemon = '';
 
@@ -163,7 +136,6 @@ async function buscarPokemon() {
 }
 
 async function consultarApi(id) {
-    // Impede consultas com IDs que não pertencem à Pokédex Nacional.
     if (!Number.isInteger(id) || id < 1 || id > MAX_POKEMON_ID) {
         mostrarErro();
         return;
@@ -175,7 +147,6 @@ async function consultarApi(id) {
             `https://pokeapi.co/api/v2/pokemon/${id}`
         );
 
-        // A PokeAPI responde com status diferente de OK para IDs inexistentes.
         if (!respostaPokemon.ok) {
             throw new Error('Pokémon não encontrado.');
         }
@@ -191,10 +162,8 @@ async function consultarApi(id) {
 
         const especie = await respostaEspecie.json();
 
-        // Guarda o ID selecionado para que o D-pad possa utilizá-lo.
         pokemonAtual = data.id;
 
-        // Atualiza todos os visores com os dados do mesmo Pokémon.
         atualizarNumero(data.id);
         exibirSprite(data.sprites.front_default);
         exibirDados(data, especie);
@@ -205,12 +174,8 @@ async function consultarApi(id) {
     }
 }
 
-/* ---------------------------------------------------------
-   6. TRATAMENTO DE ERROS
-   --------------------------------------------------------- */
-
 function mostrarErro(manterPokemon = false) {
-    // A mensagem ERRO aparece no visor principal, não no visor do sprite.
+    // A mensagem ERRO aparece no visor principal
     mainScreen.textContent = 'ERRO';
 
     // Informa o motivo no visor de informações.
@@ -218,22 +183,16 @@ function mostrarErro(manterPokemon = false) {
         ? 'Limite da Pokédex atingido.'
         : 'Pokémon não encontrado.';
 
-    // Em uma pesquisa inválida, limpa também o número selecionado.
-    // No limite do D-pad, mantém o ID para permitir voltar ou avançar.
     if (!manterPokemon) {
         numberDisplay.textContent = '#----';
         pokemonAtual = null;
     }
 }
 
-/* ---------------------------------------------------------
-   7. EXIBIR A IMAGEM DO POKÉMON
-   --------------------------------------------------------- */
 
 function exibirSprite(urlImage) {
     mainScreen.textContent = '';
 
-    // Alguns registros podem não possuir sprite frontal.
     if (!urlImage) {
         mainScreen.textContent = 'Imagem indisponível';
         return;
@@ -253,14 +212,10 @@ function exibirSprite(urlImage) {
     mainScreen.appendChild(img);
 }
 
-/* ---------------------------------------------------------
-   8. ATUALIZAR O NÚMERO DO POKÉMON
-   --------------------------------------------------------- */
 
 function atualizarNumero(id) {
     let idString = id.toString();
 
-    // Acrescenta zeros à esquerda até completar quatro algarismos.
     while (idString.length < 4) {
         idString = '0' + idString;
     }
@@ -268,9 +223,6 @@ function atualizarNumero(id) {
     numberDisplay.textContent = '#' + idString;
 }
 
-/* ---------------------------------------------------------
-   9. EXIBIR AS CARACTERÍSTICAS DO POKÉMON
-   --------------------------------------------------------- */
 
 function exibirDados(data, especie) {
     const nome = capitalizar(data.name);
@@ -306,7 +258,6 @@ function exibirDados(data, especie) {
 
     const regiao = descobrirRegiao(especie.generation.name);
 
-    // Cada informação ocupa uma linha do visor de informações.
     infoScreen.textContent =
         nome +
         '\nTipo: ' + tipos +
@@ -314,10 +265,6 @@ function exibirDados(data, especie) {
         '\nAltura: ' + alturaFormatada +
         '\nRegião: ' + regiao;
 }
-
-/* ---------------------------------------------------------
-   9. DESCOBRIR A REGIÃO PELA GERAÇÃO
-   --------------------------------------------------------- */
 
 function descobrirRegiao(geracao) {
     const regioes = {
@@ -335,10 +282,6 @@ function descobrirRegiao(geracao) {
     return regioes[geracao] || 'Região não identificada';
 }
 
-/* ---------------------------------------------------------
-   10. FORMATAÇÃO DE MEDIDAS
-   --------------------------------------------------------- */
-
 function formatarMedida(valor) {
     return valor.toLocaleString('pt-BR', {
         maximumFractionDigits: 2
@@ -349,12 +292,7 @@ function capitalizar(texto) {
     return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
-/* ---------------------------------------------------------
-   11. BOTÕES DIRECIONAIS (D-PAD)
-   --------------------------------------------------------- */
-
 function trocarPokemon(incremento) {
-    // O D-pad só funciona depois que um Pokémon foi selecionado.
     if (pokemonAtual === null) {
         mostrarErro();
         return;
@@ -362,13 +300,10 @@ function trocarPokemon(incremento) {
 
     const novoId = pokemonAtual + incremento;
 
-    // Não permite avançar para IDs menores que 1 ou maiores que 1025.
     if (novoId < 1 || novoId > MAX_POKEMON_ID) {
         mostrarErro(true);
         return;
     }
 
-    // Consulta novamente a API: imagem e todas as características
-    // serão atualizadas juntas com base no novo ID.
     consultarApi(novoId);
 }
